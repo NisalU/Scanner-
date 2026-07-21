@@ -13,26 +13,51 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
-from .config import (
-    ALERT_SCORE_THRESHOLD,
-    BACKTEST_END,
-    BACKTEST_START,
-    BACKTEST_TIMEFRAME,
-    CANDLE_LOOKBACK,
-    MAX_PAIRS,
-    SCAN_INTERVAL,
-    TIMEFRAMES,
-)
-from .alerts import alert_manager
-from .backtest import run_backtest_async, print_report
-from .database import Database
-from .exchange import create_exchange, BinanceFuturesExchange
-from .indicators import add_all_indicators
-from .liquidity import analyse_order_book
-from .market_structure import analyse_structure
-from .orderflow import OrderFlowAggregator, analyse_orderflow
-from .scoring import determine_direction, score_signal
-from .websocket import BinanceFuturesWS, KlineStream, store as ws_store
+try:
+    from .config import (
+        ALERT_SCORE_THRESHOLD,
+        BACKTEST_END,
+        BACKTEST_START,
+        BACKTEST_TIMEFRAME,
+        CANDLE_LOOKBACK,
+        MAX_PAIRS,
+        SCAN_INTERVAL,
+        TIMEFRAMES,
+    )
+    from .alerts import alert_manager
+    from .backtest import run_backtest_async, print_report
+    from .database import Database
+    from .exchange import create_exchange, BinanceFuturesExchange
+    from .indicators import add_all_indicators
+    from .liquidity import analyse_order_book
+    from .market_structure import analyse_structure
+    from .orderflow import OrderFlowAggregator, analyse_orderflow
+    from .scoring import determine_direction, score_signal
+    from .websocket import BinanceFuturesWS, KlineStream, store as ws_store
+except ImportError:
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from scanner.config import (
+        ALERT_SCORE_THRESHOLD,
+        BACKTEST_END,
+        BACKTEST_START,
+        BACKTEST_TIMEFRAME,
+        CANDLE_LOOKBACK,
+        MAX_PAIRS,
+        SCAN_INTERVAL,
+        TIMEFRAMES,
+    )
+    from scanner.alerts import alert_manager
+    from scanner.backtest import run_backtest_async, print_report
+    from scanner.database import Database
+    from scanner.exchange import create_exchange, BinanceFuturesExchange
+    from scanner.indicators import add_all_indicators
+    from scanner.liquidity import analyse_order_book
+    from scanner.market_structure import analyse_structure
+    from scanner.orderflow import OrderFlowAggregator, analyse_orderflow
+    from scanner.scoring import determine_direction, score_signal
+    from scanner.websocket import BinanceFuturesWS, KlineStream, store as ws_store
 
 logger = logging.getLogger(__name__)
 
