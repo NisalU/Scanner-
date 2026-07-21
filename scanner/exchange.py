@@ -109,23 +109,25 @@ class BinanceFuturesExchange(BaseExchange):
             await self.init()
 
         # Step 1 — filter active USDT-M perps from market metadata (no ticker needed)
-        # Avoid endswith("/USDT:USDT") — symbol format varies across ccxt versions.
-        # Rely solely on structured market fields instead.
+        # Use `linear=True` (USDT-margined) + `expiry is None` (perpetual, not dated).
         perps = [
             sym for sym, mkt in self._ex.markets.items()
             if (
-                mkt.get("type") == "future"
-                and mkt.get("settle") == "USDT"
-                and mkt.get("active")
-                and not mkt.get("expiry")   # exclude dated contracts; keep perps only
+                mkt.get("active")
+                and mkt.get("linear")           # USDT-M (linear), not inverse/coin-m
+                and mkt.get("expiry") is None   # perpetual only, exclude dated futures
             )
         ]
         if not perps:
-            # Last resort: log a few market entries so the format can be diagnosed
-            sample = list(self._ex.markets.items())[:5]
+            # Log sample market entries so the format can be diagnosed
+            sample = list(self._ex.markets.items())[:3]
             for s, m in sample:
-                logger.debug("Market sample — symbol=%s type=%s settle=%s active=%s",
-                             s, m.get("type"), m.get("settle"), m.get("active"))
+                logger.warning(
+                    "Market sample — symbol=%s type=%s linear=%s settle=%s "
+                    "active=%s expiry=%s",
+                    s, m.get("type"), m.get("linear"), m.get("settle"),
+                    m.get("active"), m.get("expiry"),
+                )
             logger.warning("No active USDT-M perpetuals found in markets")
             return []
 
