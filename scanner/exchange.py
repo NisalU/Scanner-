@@ -108,38 +108,50 @@ class BinanceFuturesExchange(BaseExchange):
         if not self._markets_loaded:
             await self.init()
 
+        # Step 1 — filter active USDT-M perps from market metadata (no ticker needed)
+        perps = [
+            sym for sym, mkt in self._ex.markets.items()
+            if (
+                mkt.get("type") == "future"
+                and mkt.get("settle") == "USDT"
+                and mkt.get("active")
+                and sym.endswith("/USDT:USDT")
+            )
+        ]
+        if not perps:
+            logger.warning("No active USDT-M perpetuals found in markets")
+            return []
+
+        # Step 2 — fetch tickers to rank by volume
         tickers: Dict[str, Any] = await self._ex.fetch_tickers()
 
         candidates: List[Tuple[str, float]] = []
-        for symbol, ticker in tickers.items():
-            market = self._ex.markets.get(symbol, {})
-            if not (
-                market.get("type") == "future"
-                and market.get("settle") == "USDT"
-                and market.get("active")
-                and symbol.endswith("/USDT:USDT")
-            ):
-                continue
-            # quoteVolume may be None on some ccxt/Binance versions;
-            # fall back to baseVolume × last price
-            vol24: float = ticker.get("quoteVolume") or 0
-            if not vol24:
-                base_vol = ticker.get("baseVolume") or 0
-                last     = ticker.get("last") or 0
-                vol24    = base_vol * last
+        for symbol in perps:
+            ticker = tickers.get(symbol, {})
+            info   = ticker.get("info", {})
+
+            # Try normalized fields first, then raw Binance info dict
+            vol24: float = (
+                ticker.get("quoteVolume")
+                or float(info.get("quoteVolume") or 0)
+                or (ticker.get("baseVolume") or 0) * (ticker.get("last") or 0)
+                or float(info.get("volume") or 0) * float(info.get("lastPrice") or 0)
+            )
             if vol24 >= MIN_VOLUME_USDT:
                 candidates.append((symbol, vol24))
 
-        if not candidates:
+        if candidates:
+            candidates.sort(key=lambda x: x[1], reverse=True)
+            pairs = [sym for sym, _ in candidates[:MAX_PAIRS]]
+        else:
+            # Volume data unavailable — take all active perps up to MAX_PAIRS
             logger.warning(
-                "No pairs passed volume filter (MIN_VOLUME_USDT=%.0f). "
-                "Check that tickers returned valid volume data.",
-                MIN_VOLUME_USDT,
+                "Volume data unavailable from tickers; "
+                "falling back to all %d active USDT-M perps (capped at %d).",
+                len(perps), MAX_PAIRS,
             )
+            pairs = sorted(perps)[:MAX_PAIRS]
 
-        # Sort descending by volume, keep top N
-        candidates.sort(key=lambda x: x[1], reverse=True)
-        pairs = [sym for sym, _ in candidates[:MAX_PAIRS]]
         logger.info("Universe: %d USDT-M pairs selected", len(pairs))
         return pairs
 
