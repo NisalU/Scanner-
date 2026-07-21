@@ -1,0 +1,25 @@
+# ─── Core async & networking ───────────────────────────────────────────────
+asyncio-compat>=0.1.0      # optional, only needed on some Python builds
+aiohttp>=3.9.0
+websockets>=12.0
+httpx>=0.27.0
+
+# ─── Exchange ──────────────────────────────────────────────────────────────
+ccxt>=4.3.0                # exchange abstraction (Binance, Bybit, OKX, …)
+
+# ─── Data & indicators ─────────────────────────────────────────────────────
+numpy>=1.26.0
+pandas>=2.2.0
+pandas-ta>=0.3.14b0        # optional: replaces manual indicator code
+
+# ─── Database ──────────────────────────────────────────────────────────────
+aiosqlite>=0.20.0
+
+# ─── Alerts ────────────────────────────────────────────────────────────────
+httpx>=0.27.0              # Telegram REST calls (already listed above)
+
+# ─── Configuration ─────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ─── Utilities ─────────────────────────────────────────────────────────────
+colorlog>=6.8.0            # coloured console output (optional)
