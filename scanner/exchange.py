@@ -120,9 +120,22 @@ class BinanceFuturesExchange(BaseExchange):
                 and symbol.endswith("/USDT:USDT")
             ):
                 continue
-            vol24 = (ticker.get("quoteVolume") or 0)
+            # quoteVolume may be None on some ccxt/Binance versions;
+            # fall back to baseVolume × last price
+            vol24: float = ticker.get("quoteVolume") or 0
+            if not vol24:
+                base_vol = ticker.get("baseVolume") or 0
+                last     = ticker.get("last") or 0
+                vol24    = base_vol * last
             if vol24 >= MIN_VOLUME_USDT:
                 candidates.append((symbol, vol24))
+
+        if not candidates:
+            logger.warning(
+                "No pairs passed volume filter (MIN_VOLUME_USDT=%.0f). "
+                "Check that tickers returned valid volume data.",
+                MIN_VOLUME_USDT,
+            )
 
         # Sort descending by volume, keep top N
         candidates.sort(key=lambda x: x[1], reverse=True)
