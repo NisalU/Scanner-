@@ -1,7 +1,7 @@
 # Environment
 .env
 .env.*
-!.env.example
+!scanner/.env.example
 
 # Python
 __pycache__/

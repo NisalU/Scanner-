@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 # ---------------------------------------------------------------------------
 # Logging

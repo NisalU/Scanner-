@@ -72,8 +72,8 @@ pip install -r requirements.txt
 ### 5. Configure
 
 ```bash
-cp .env.example .env
-# Edit .env — add your Telegram token and chat ID at minimum.
+cp scanner/.env.example scanner/.env
+# Edit scanner/.env — add your Telegram token and chat ID at minimum.
 # Binance API keys are only needed for private data; scanning is public.
 ```
 
