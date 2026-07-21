@@ -114,7 +114,27 @@ ZONE_MERGE_ATR_MULT: float = 0.5
 
 ORDER_BOOK_DEPTH: int = 20            # levels to request
 WALL_THRESHOLD_MULT: float = 5.0     # qty > avg * this → "wall"
-SPOOF_PULL_THRESHOLD: float = 0.8    # 80 % reduction within a tick
+SPOOF_PULL_THRESHOLD: float = 0.8    # legacy — kept for import compat
+
+# ---------------------------------------------------------------------------
+# Spoof detection (multi-factor scoring)
+# ---------------------------------------------------------------------------
+
+# Minimum order size relative to avg depth to be considered at all
+MIN_ORDER_SIZE_MULTIPLIER: float = float(os.getenv("MIN_ORDER_SIZE_MULTIPLIER", "5"))
+
+# Lifetime window: below MIN is HFT noise, above MAX is not a spoof
+MIN_LIFETIME_SECONDS: float = float(os.getenv("MIN_LIFETIME_SECONDS", "0.5"))
+MAX_LIFETIME_SECONDS: float = float(os.getenv("MAX_LIFETIME_SECONDS", "5.0"))
+
+# Minimum distance from mid price (%) to ignore normal near-market quotes
+MIN_DISTANCE_PERCENT: float = float(os.getenv("MIN_DISTANCE_PERCENT", "0.3"))
+
+# Minimum number of repeat appear+cancel cycles before pattern is confirmed
+MIN_REPEAT_COUNT: int = int(os.getenv("MIN_REPEAT_COUNT", "3"))
+
+# Composite score threshold — only fire an alert at or above this
+MIN_SPOOF_SCORE: int = int(os.getenv("MIN_SPOOF_SCORE", "80"))
 
 # ---------------------------------------------------------------------------
 # Scoring weights  (must sum to 100)
